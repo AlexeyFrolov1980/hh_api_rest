@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link href="styles.css" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="/static/styles.css"/>
 </head>
 <body>
-<!-- menu -->
+
+    <!-- menu -->
     <nav>
         <ul>
-            <li><a href="index.html">Главная</a></li>
-            <li><a href="form.html">Поиск</a></li>
-            <li><a href="contacts.html">Контакты</a></li>
+            {% for key, value in nav_menu.items() %}
+                <li><a href={{value}}>{{key}}</a></li>
+            {% endfor %}
         </ul>
     </nav>
 
@@ -21,6 +22,7 @@
         <h1>Проект - парсинг HH</h1>
         <p class="lead">Веб-оберртка над поиском в HH</p>
         <p>Краткое опиание проекта будет тут</p>
+
     </article>
 
 

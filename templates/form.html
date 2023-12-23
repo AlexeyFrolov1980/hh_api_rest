@@ -2,37 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-    <link href="styles.css" rel="stylesheet">
+    <title>Форма запроса</title>
+    <link type="text/css" rel="stylesheet" href="/static/styles.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
 </head>
 <body>
-<!-- menu -->
+    <!-- menu -->
     <nav>
         <ul>
-            <li><a href="index.html">Главная</a></li>
-            <li><a href="form.html">Поиск</a></li>
-            <li><a href="contacts.html">Контакты</a></li>
+            {% for key, value in nav_menu.items() %}
+                <li><a href={{value}}>{{key}}</a></li>
+            {% endfor %}
         </ul>
     </nav>
 
-    <!-- main article -->
+
+<!-- main article -->
     <article>
 
         <h1>Проект - парсинг HH</h1>
         <p class="lead">Параметры поиска вакансий</p>
         <p>
-            <form action="contacts.html" method="get">
+            <form action="/form/" method="get">
                 <p>
                     <input type="text" id="query_string" name="query_string" placeholder="Какие вакансии искать">
-                    <br>
                 </p>
                 <p>
                     <label for="regions">Выберите регионы для поиска</label>
                     <br>
                     <select id="regions" name="search_regions">
-                        <option value="113">Вся Россия</option>
-                        <option value="113:1">Москва</option>
-                        <option value="113:2">Петербург</option>
+                        {% for item in region_list %}
+                            <option value="{{item[2]}}">{{item[3]}}</option>
+                        {% endfor %}
+                            <option value="113:1">Москва</option>
+                            <option value="113:2">Петербург</option>
                     </select>
                 </p>
                 <br>
@@ -40,6 +43,32 @@
 
             </form>
         </p>
+        <p>Запрос {{query_str}}      регион {{search_reg}}</p>
+
+        {% if vac_data %}
+             <table id="data" class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Название вакансии</th>
+                    <th>Зарплата</th>
+                    <th>Ссылка на вакансию</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for vac in vac_data %}
+                    <tr>
+                      <td>{{ vac[0] }}</td>
+                      <td>{{ vac[1] }}</td>
+                      <td><a href="{{vac[2]}}">{{vac[2]}}</a></td>
+                    </tr>
+                  {% endfor %}
+    </tbody>
+  </table>
+        {% else %}
+            <p>Вакансии не найдены</p>
+        {% endif %}
+
+
     </article>
 
 

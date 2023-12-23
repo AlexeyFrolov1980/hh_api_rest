@@ -38,6 +38,13 @@ def get_area_code(area_name):
     return -1
 
 
+def sallary_to_txt(currency, sal):
+    if (not currency is None) and (not sal is None):
+        return str(sal) + "  "+ currency
+    else:
+        return "Не указана"
+
+
 def get_sallary(vacancy):
     # print(vac)
     sal_txt = vacancy['salary']
@@ -188,3 +195,22 @@ def stat_structure_to_str(stat_stucture):
         res += str(key) + " " + str(value) + "% \n"
 
     return res
+
+
+def get_vac_list(params, per_page=50, page=0):
+    params['page'] = page
+    params['per_page'] = per_page
+    data = get_page(params,page)
+    jsObj = json.loads(data)
+    v_pages = jsObj['pages']
+    # Необязательная задержка, но чтобы не нагружать сервисы hh, оставим. 5 сек мы может подождать
+    vlst = jsObj['items']
+    res = list()
+
+    for vac in vlst:
+        cur, sal = get_sallary(vac)
+        res.append([vac['name'], sallary_to_txt(cur, sal), vac['apply_alternate_url']])
+
+    print(res)
+    return res
+
