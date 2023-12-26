@@ -1,8 +1,13 @@
 from flask import Flask, render_template, request
 import hh_functions
 import datetime
+import sqlite3
 
+
+debug_flag = True
+DB_NAME = 'DB/hh.sqlite'
 app = Flask(__name__)
+
 
 
 #Получаем список регионов из hh для отображения в поиске. Делаем это 1 раз при старте для оптимизации
@@ -54,12 +59,18 @@ def showform():
             query_string = ''
 
 
+        #Парсим вакансии с hh и сохраняем их в БД
+        if query_string != '' :
+            params = hh_functions.make_params(query_string, reg_id)
+            vac_data_hh = hh_functions.get_vac_list(params, per_page=50, page=0)
 
-        params = hh_functions.make_params(query_string, reg_id)
-        vac_data = hh_functions.get_vac_list(params, per_page=50, page=0)
+            conn = sqlite3.connect(DB_NAME)
+            with conn:
+                hh_functions.save_vacancies_to_db(conn, vac_data_hh)
+                vac_data = hh_functions.get_vacancies_from_DB(conn, query_string, reg_id)
 
-
-
+            print(vac_data_hh)
+            print(vac_data)
 
 
     return render_template('form.html',  nav_menu=main_menu_items, query_str=query_string,
@@ -67,9 +78,11 @@ def showform():
 
 
 
-
-print(region_list)
-
+if not debug_flag:
+    #При запуске 1 раз загружаем или апдейтим справочник городов
+    conn = sqlite3.connect(DB_NAME)
+    with conn:
+        hh_functions.fill_araas_table(conn)
 
 if __name__ == "__main__":
     app.run(debug=True)

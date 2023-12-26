@@ -4,6 +4,7 @@ import time  # Для задержки между запросами
 import os  # Для работы с файлами
 import pprint
 import list_with_counter
+import sqlite3
 
 
 def get_areas():
@@ -28,6 +29,58 @@ def get_areas():
     return areas
 
 
+def fill_araas_table(cnn: sqlite3.Connection):
+    areas = get_areas()
+    cursor = cnn.cursor()
+    for a in areas:
+        area_id = a[0]
+        area_name = a[1]
+        city_id = a[2]
+        city_name = a[3]
+        params = {'area_id': area_id, 'area_name': area_name, 'city_id': city_id, 'city_name': city_name}
+
+        SQL = "SELECT * FROM Cities WHERE CityId=:city_id"
+        cursor.execute(SQL, {"city_id": city_id})
+        city = cursor.fetchone()
+
+        if city is None:
+            SQL = "INSERT INTO Cities (AreaId, AreaName, CityID, CityName) VALUES (:area_id, :area_name, :city_id, :city_name)"
+        else:
+            SQL = "UPDATE Cities SET AreaId=:area_id, AreaName=:area_name, CityId=:city_id, CityName=:city_name WHERE CityId=:city_id"
+
+        cursor.execute(SQL, params)
+
+
+def save_vacancies_to_db(cnn: sqlite3.Connection, vac: list):
+    cursor = cnn.cursor()
+    for v in vac:
+        params = {"ID": v[0],
+                  "Name": v[1],
+                  "cityID": v[5],
+                  "Sallary": v[3],
+                  "SallaryCur": v[2],
+                  "PublishDate": v[6],
+                  "URL": v[4]}
+
+        SQL = "SELECT * FROM vacancies WHERE ID=:ID"
+        cursor.execute(SQL, params)
+        if cursor.fetchone() is None:
+            SQL = "INSERT INTO vacancies (ID, Name, cityID, Sallary, SallaryCur ,PublishDate, URL) "
+            SQL += "VALUES (:ID, :Name, :cityID, :Sallary, :SallaryCur ,:PublishDate, :URL)"
+        cursor.execute(SQL, params)
+
+
+def get_vacancies_from_DB (cnn: sqlite3.Connection, keyword:str, city_id: int):
+    cursor = cnn.cursor()
+    SQL = "select  ID, Name, Sallary, SallaryCur, URL, CityName, PublishDate "
+    SQL += "from vacancies join Cities on vacancies.cityID = Cities.CityID "
+    SQL += "WHERE Name like '%" + keyword + "%' and (Cities.cityID = :city_id or Cities.AreaID = :city_id)"
+
+    params = {"city_id": city_id}
+    cursor.execute(SQL, params)
+    return cursor.fetchall()
+
+
 def get_area_code(area_name):
     areas = get_areas()
     for a in areas:
@@ -38,9 +91,13 @@ def get_area_code(area_name):
     return -1
 
 
+def get_area_code_from_vac(vac):
+    return vac['area']['id']
+
+
 def sallary_to_txt(currency, sal):
     if (not currency is None) and (not sal is None):
-        return str(sal) + "  "+ currency
+        return str(sal) + "  " + currency
     else:
         return "Не указана"
 
@@ -200,7 +257,7 @@ def stat_structure_to_str(stat_stucture):
 def get_vac_list(params, per_page=50, page=0):
     params['page'] = page
     params['per_page'] = per_page
-    data = get_page(params,page)
+    data = get_page(params, page)
     jsObj = json.loads(data)
     v_pages = jsObj['pages']
     # Необязательная задержка, но чтобы не нагружать сервисы hh, оставим. 5 сек мы может подождать
@@ -209,8 +266,8 @@ def get_vac_list(params, per_page=50, page=0):
 
     for vac in vlst:
         cur, sal = get_sallary(vac)
-        res.append([vac['name'], sallary_to_txt(cur, sal), vac['apply_alternate_url']])
+        res.append([vac['id'], vac['name'], cur, sal,
+                    vac['apply_alternate_url'], get_area_code_from_vac(vac), vac['published_at']])
 
     print(res)
     return res
-

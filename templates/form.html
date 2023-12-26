@@ -49,9 +49,13 @@
              <table id="data" class="table table-striped">
                 <thead>
                   <tr>
+                    <th>ID</th>
                     <th>Название вакансии</th>
                     <th>Зарплата</th>
+                    <th>Валюта</th>
                     <th>Ссылка на вакансию</th>
+                    <th>Город</th>
+                    <th>Опубликована</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -59,7 +63,11 @@
                     <tr>
                       <td>{{ vac[0] }}</td>
                       <td>{{ vac[1] }}</td>
-                      <td><a href="{{vac[2]}}">{{vac[2]}}</a></td>
+                      <td>{{ vac[2] }}</td>
+                      <td>{{ vac[3] }}</td>
+                      <td><a href="{{vac[4]}}">{{vac[4]}}</a></td>
+                      <td>{{ vac[5] }}</td>
+                      <td>{{ vac[6] }}</td>
                     </tr>
                   {% endfor %}
     </tbody>
