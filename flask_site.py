@@ -2,23 +2,74 @@ from flask import Flask, render_template, request
 import hh_functions
 import datetime
 import sqlite3
+from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
 
 
 debug_flag = True
 DB_NAME = 'DB/hh.sqlite'
+
+Base = declarative_base()
+
+class Cities(Base):
+    __tablename__ = 'Cities'
+    RecID = Column(Integer, primary_key=True)
+    AreaId = Column(Integer)
+    AreaName = Column(String(250))
+    CityID = Column(Integer)
+    CityName = Column(String(250))
+
+    def __init__(self, AreaId, AreaName, CityID,  CityName):
+        self.AreaId = AreaId
+        self.AreaName = AreaName
+        self.CityID = CityID
+        self.CityName = CityName
+
+    def __repr__(self):
+        return "RecID: " + str(self.RecID) + " AreaID: " + str(self.AreaId) + " AreaName: " + self.AreaName + " CityID: " + str(self.CityID) + " CityName: " + self.CityName
+
+
+engine = create_engine('sqlite:///'+DB_NAME)
+# создаем таблицы
+Base.metadata.create_all(bind=engine)
+
+
+engine.connect()
+
+print(engine)
+# Создание сессии
+# create a configured "Session" class
+Session = sessionmaker(bind=engine)
+
+# create a Session
+session = Session()
+
+
+
+
 app = Flask(__name__)
+
+
 
 
 
 #Получаем список регионов из hh для отображения в поиске. Делаем это 1 раз при старте для оптимизации
 # (берем 20 первых)
 
-def test_reg_list(count=50):
-    res = [['113','Россия','113','Россия'], ['113','Россия','1', 'Москва'], ['113','Россия','2', 'Петербург']]
-    return res + hh_functions.get_areas()[:count]
+def test_reg_list(count=50, session = None):
+    if session is None:
+        res = [['113','Россия','113','Россия'], ['113','Россия','1', 'Москва'], ['113','Россия','2', 'Петербург']]
+        return res + hh_functions.get_areas()[:count]
+    else:
+        regions = session.query(Cities).all()
+        return regions[:count]
 
 
-region_list = test_reg_list()
+region_list = test_reg_list(session=session)
+
+print(region_list)
 
 main_menu_items = {"Главная": "/",
                    "Поиск": "/form",
@@ -83,6 +134,15 @@ if not debug_flag:
     conn = sqlite3.connect(DB_NAME)
     with conn:
         hh_functions.fill_araas_table(conn)
+
+
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

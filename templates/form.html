@@ -32,7 +32,7 @@
                     <br>
                     <select id="regions" name="search_regions">
                         {% for item in region_list %}
-                            <option value="{{item[2]}}">{{item[3]}}</option>
+                            <option value="{{item.CityID}}">{{item.CityName}}</option>
                         {% endfor %}
                             <option value="113:1">Москва</option>
                             <option value="113:2">Петербург</option>

@@ -5,6 +5,8 @@ import os  # Для работы с файлами
 import pprint
 import list_with_counter
 import sqlite3
+from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy.ext.declarative import declarative_base
 
 
 def get_areas():
